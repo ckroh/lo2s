@@ -10,6 +10,8 @@ include(cmake/DefaultBuildType.cmake)
 # Intialize git submodules if not done already
 file(GLOB SUBMODULE_FILES "lib/otf2xx/*")
 list(LENGTH SUBMODULE_FILES COUNT_OTF2XX)
+file(GLOB SUBMODULE_FILES "lib/ins_dec/*")
+list(LENGTH SUBMODULE_FILES COUNT_InsDec)
 file(GLOB SUBMODULE_FILES "lib/nitro/*")
 list(LENGTH SUBMODULE_FILES COUNT_NITRO)
 if(${COUNT_OTF2XX} EQUAL 0 OR ${COUNT_NITRO} EQUAL 0)
@@ -19,6 +21,7 @@ if(${COUNT_OTF2XX} EQUAL 0 OR ${COUNT_NITRO} EQUAL 0)
 endif()
 
 include(lib/otf2xx/OTF2XX.cmake)
+include(lib/ins_dec/InsDec.cmake)
 
 include(lib/nitro/Nitro.cmake)
 
@@ -48,7 +51,7 @@ if (USE_RADARE)
     if (Radare_FOUND)
         include_directories(SYSTEM ${Radare_INCLUDE_DIRS})
         set(RADARE_SOURCE_FILES src/radare.cpp)
-        add_definitions(-DHAVE_RADARE)
+#        add_definitions(-DHAVE_RADARE)
     else()
         message(SEND_ERROR "Radare not found but requested.")
         set(RADARE_SOURCE_FILES "")
@@ -56,6 +59,10 @@ if (USE_RADARE)
 else()
     set(RADARE_SOURCE_FILES "")
 endif()
+set(InsDec_LIBRARIES "/home/tinker/Arbeit/SHK/ScorePInstructionDec/Capstone/ins_dec/libinsdec.so")
+set(Capstone_LIBRARIES "/home/tinker/Arbeit/SHK/ScorePInstructionDec/Capstone/capstone/libcapstone.so.4")
+add_definitions(-DHAVE_INS_DEC)
+add_definitions(-DID_X86)
 
 INCLUDE(CheckIncludeFiles)
 CHECK_INCLUDE_FILES(linux/hw_breakpoint.h HAVE_HW_BREAKPOINT_H)
@@ -80,11 +87,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE")
 
 # Doesn't seem to work with clang, even though it should,
 # but at least it doesn't complain about it either
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc -lcapstone")
 
 include_directories(include)
 
 set(SOURCE_FILES
+
+	
         src/metric/plugin/plugin.cpp src/metric/plugin/channel.cpp src/metric/plugin/metrics.cpp
         src/metric/perf_counter.cpp
 
@@ -110,15 +119,16 @@ set(SOURCE_FILES
         src/platform.cpp
         src/topology.cpp src/bfd_resolve.cpp src/pipe.cpp
         src/mmap.cpp
-        src/util.cpp
-
+        src/util.cpp	
+        src/ins_dec.cpp
+        /home/tinker/Arbeit/SHK/ScorePInstructionDec/Capstone/ins_dec/ins_dec.c
         ${X86_ADAPT_SOURCE_FILES}
         ${RADARE_SOURCE_FILES}
 )
 
 
 add_executable(lo2s ${SOURCE_FILES})
-target_link_libraries(lo2s ${OTF2_LIBRARIES} ${Boost_LIBRARIES} ${Radare_LIBRARIES}
+target_link_libraries(lo2s ${Capstone_LIBRARIES} ${InsDec_LIBRARIES} ${OTF2_LIBRARIES} ${Boost_LIBRARIES} ${Radare_LIBRARIES}
         ${Binutils_LIBRARIES} ${Dl_LIBRARIES} ${X86_ADAPT_LIBRARIES})
 
 option(IWYU "Developer option for include what you use." OFF)

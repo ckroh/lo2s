@@ -131,6 +131,8 @@ void parse_program_options(int argc, const char** argv)
     {
 #ifdef HAVE_RADARE
         config.disassemble = true;
+#elif HAVE_INS_DEC
+        config.disassemble = true;
 #else
         if (disassemble)
         {

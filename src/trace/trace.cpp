@@ -345,7 +345,10 @@ void Trace::merge_ips(IpRefMap& new_children, IpCctxMap& children,
                     // TODO do not write properties for useless unknown stuff
                     OTF2_AttributeValue_union value;
                     auto instruction = maps.lookup_instruction(ip);
-                    Log::trace() << "mapped " << ip << " to " << instruction;
+//                    Log::trace() << "mapped " << ip << " to " << instruction;
+//			for(std::vector<std::string>::iterator it = instructions.begin(); it != instructions.end(); ++it) {
+//				
+//			}
                     value.stringRef = intern(instruction).ref();
                     calling_context_properties_.emplace(new_cctx, intern("instruction"),
                                                         otf2::common::type::string, value);

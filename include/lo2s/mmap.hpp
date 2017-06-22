@@ -26,6 +26,9 @@
 #ifdef HAVE_RADARE
 #include <lo2s/radare.hpp>
 #endif
+#ifdef HAVE_INS_DEC
+#include <lo2s/ins_dec.hpp>
+#endif
 #include <lo2s/util.hpp>
 
 #include <mutex>
@@ -97,6 +100,10 @@ public:
       ,
       radare_(name)
 #endif
+#ifdef HAVE_INS_DEC
+      ,
+      insdec_(name)
+#endif
     {
     }
 
@@ -109,6 +116,13 @@ public:
     virtual std::string lookup_instruction(Address ip) override
     {
         return radare_.instruction(ip);
+    }
+#endif
+
+#ifdef HAVE_INS_DEC
+    virtual std::string lookup_instruction(Address ip) override
+    {
+        return insdec_.instruction(ip);
     }
 #endif
 
@@ -129,6 +143,9 @@ private:
 #ifdef HAVE_RADARE
     RadareResolver radare_;
 #endif // HAVE_RADARE
+#ifdef HAVE_INS_DEC
+    InsDecResolver insdec_;
+#endif // HAVE_INS_DEC
 };
 
 class MemoryMap
